@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>🎬 CineMate · movie chatbot</title>
+  <!-- Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* ----- RESET & BASE ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(145deg, #0b0e1a 0%, #1a1f2f 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* ----- CHAT CARD ----- */
+    .chat-container {
+      max-width: 820px;
+      width: 100%;
+      background: rgba(22, 28, 46, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 2.5rem;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    /* ----- HEADER ----- */
+    .chat-header {
+      padding: 1.5rem 2rem;
+      background: rgba(12, 17, 29, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .chat-header .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .chat-header .brand i {
+      font-size: 2.2rem;
+      color: #f5c842;
+      filter: drop-shadow(0 0 6px rgba(245, 200, 66, 0.3));
+    }
+
+    .chat-header .brand h1 {
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+      color: #f0f3fa;
+    }
+
+    .chat-header .brand span {
+      font-weight: 400;
+      color: #8b93b0;
+      font-size: 0.95rem;
+      margin-left: 0.3rem;
+    }
+
+    .header-badge {
+      background: rgba(245, 200, 66, 0.12);
+      padding: 0.4rem 1rem;
+      border-radius: 60px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #f5c842;
+      letter-spacing: 0.3px;
+      border: 1px solid rgba(245, 200, 66, 0.15);
+      white-space: nowrap;
+    }
+
+    /* ----- MESSAGES AREA ----- */
+    .chat-messages {
+      padding: 1.8rem 2rem 0.8rem 2rem;
+      max-height: 420px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      scroll-behavior: smooth;
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 5px;
+    }
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #3e465e;
+      border-radius: 12px;
+    }
+
+    /* ----- MESSAGE BUBBLES ----- */
+    .message {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      max-width: 88%;
+      animation: fadeSlide 0.3s ease-out;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 40px;
+      background: #2a324a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+      color: #c8d0e6;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
+
+    .message.user .avatar {
+      background: #f5c842;
+      color: #0b0e1a;
+    }
+
+    .message .bubble {
+      background: #252d44;
+      padding: 0.9rem 1.4rem;
+      border-radius: 1.8rem;
+      border-bottom-left-radius: 0.4rem;
+      color: #eaeef8;
+      font-size: 0.95rem;
+      line-height: 1.55;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      word-break: break-word;
+    }
+
+    .message.user .bubble {
+      background: #f5c842;
+      color: #0b0e1a;
+      border-bottom-left-radius: 1.8rem;
+      border-bottom-right-radius: 0.4rem;
+      font-weight: 500;
+    }
+
+    .message .bubble i {
+      margin-right: 6px;
+      opacity: 0.7;
+    }
+
+    .message .bubble .film-tag {
+      display: inline-block;
+      background: rgba(255,255,255,0.06);
+      padding: 0.2rem 0.9rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin: 0.3rem 0.2rem 0 0;
+      color: #cbd5f0;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .message.user .bubble .film-tag {
+      background: rgba(0,0,0,0.1);
+      color: #1f1f2a;
+      border-color: rgba(0,0,0,0.05);
+    }
+
+    /* typing indicator */
+    .typing-indicator {
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding-left: 0.5rem;
+      opacity: 0.8;
+    }
+    .typing-indicator .dots {
+      display: flex;
+      gap: 5px;
+    }
+    .typing-indicator .dots span {
+      width: 8px;
+      height: 8px;
+      background: #8892b0;
+      border-radius: 20px;
+      animation: pulse 1.4s infinite;
+    }
+    .typing-indicator .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ----- INPUT AREA ----- */
+    .chat-input-area {
+      padding: 0.8rem 2rem 1.8rem 2rem;
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-end;
+      background: rgba(12, 17, 29, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .chat-input-area .input-wrap {
+      flex: 1;
+      background: #1b2236;
+      border-radius: 60px;
+      padding: 0.3rem 0.3rem 0.3rem 1.5rem;
+      display: flex;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: border 0.2s;
+    }
+    .chat-input-area .input-wrap:focus-within {
+      border-color: #f5c842;
+      box-shadow: 0 0 0 3px rgba(245, 200, 66, 0.15);
+    }
+
+    .chat-input-area .input-wrap input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #eef2fc;
+      font-size: 0.95rem;
+      padding: 0.7rem 0;
+      flex: 1;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+    }
+    .chat-input-area .input-wrap input::placeholder {
+      color: #636c88;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+
+    .chat-input-area .input-wrap button {
+      background: #f5c842;
+      border: none;
+      color: #0b0e1a;
+      width: 46px;
+      height: 46px;
+      border-radius: 60px;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 6px 14px rgba(245, 200, 66, 0.25);
+    }
+    .chat-input-area .input-wrap button:hover {
+      transform: scale(0.96);
+      background: #f8d55a;
+      box-shadow: 0 6px 18px rgba(245, 200, 66, 0.35);
+    }
+    .chat-input-area .input-wrap button:active {
+      transform: scale(0.92);
+    }
+    .chat-input-area .input-wrap button i {
+      margin-left: 2px;
+    }
+
+    .chat-input-area .suggestion-hint {
+      color: #6d7696;
+      font-size: 0.7rem;
+      letter-spacing: 0.2px;
+      padding: 0 0.2rem 0.2rem 0.2rem;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .chat-input-area .suggestion-hint i {
+      font-size: 0.6rem;
+      opacity: 0.6;
+    }
+
+    /* ----- quick suggestion chips (dynamic) ----- */
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.5rem 2rem 0.8rem 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+    }
+    .quick-chips .chip {
+      background: #1f2740;
+      padding: 0.35rem 1.1rem;
+      border-radius: 60px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #bcc6e2;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+      transition: 0.15s;
+      letter-spacing: 0.2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .quick-chips .chip i {
+      font-size: 0.7rem;
+      color: #f5c842;
+    }
+    .quick-chips .chip:hover {
+      background: #2d3657;
+      color: #f0f4ff;
+      border-color: rgba(245, 200, 66, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* responsive */
+    @media (max-width: 550px) {
+      .chat-header { padding: 1rem 1.2rem; }
+      .chat-messages { padding: 1.2rem 1.2rem 0.2rem 1.2rem; max-height: 360px; }
+      .chat-input-area { padding: 0.5rem 1.2rem 1.2rem 1.2rem; flex-wrap: wrap; }
+      .message { max-width: 95%; }
+      .quick-chips { padding: 0.2rem 1.2rem 0.8rem 1.2rem; }
+      .chat-header .brand h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container" id="app">
+  <!-- HEADER -->
+  <div class="chat-header">
+    <div class="brand">
+      <i class="fas fa-film"></i>
+      <h1>CineMate <span>· AI</span></h1>
+    </div>
+    <div class="header-badge">
+      <i class="fas fa-globe-americas" style="margin-right: 6px;"></i> all countries
+    </div>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="chat-messages" id="chatMessages">
+    <!-- bot welcome -->
+    <div class="message bot">
+      <div class="avatar"><i class="fas fa-robot"></i></div>
+      <div class="bubble">
+        <i class="fas fa-sparkles" style="color: #f5c842;"></i> 
+        Hey there! I'm your movie & drama advisor. 
+        <br>Tell me what you're into — genre, country, actor, or mood — and I'll recommend gems, plus director & production details.
+        <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px;">
+          <span class="film-tag"><i class="fas fa-tag"></i> Sci‑Fi</span>
+          <span class="film-tag"><i class="fas fa-tag"></i> K‑Drama</span>
+          <span class="film-tag"><i class="fas fa-tag"></i> Bollywood</span>
+          <span class="film-tag"><i class="fas fa-tag"></i> Indie</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK CHIPS (dynamic suggestions) -->
+  <div class="quick-chips" id="quickChips">
+    <span class="chip" data-query="sci-fi thriller"><i class="fas fa-rocket"></i> Sci‑Fi thriller</span>
+    <span class="chip" data-query="korean drama romance"><i class="fas fa-heart"></i> K‑Drama romance</span>
+    <span class="chip" data-query="bollywood action"><i class="fas fa-bolt"></i> Bollywood action</span>
+    <span class="chip" data-query="anime fantasy"><i class="fas fa-dragon"></i> Anime fantasy</span>
+    <span class="chip" data-query="director christopher nolan"><i class="fas fa-crown"></i> Nolan films</span>
+  </div>
+
+  <!-- INPUT -->
+  <div class="chat-input-area">
+    <div class="input-wrap">
+      <input type="text" id="userInput" placeholder="e.g. 'Italian drama' or 'director Bong Joon-ho'" autocomplete="off" />
+      <button id="sendBtn" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    "use strict";
+
+    // ----- DOM refs -----
+    const chatMessages = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const quickChips = document.getElementById('quickChips');
+
+    // ----- State -----
+    let isProcessing = false;
+
+    // ----- Helper: scroll to bottom -----
+    function scrollToBottom() {
+      setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 20);
+    }
+
+    // ----- Add a message bubble -----
+    function addMessage(text, sender = 'bot', extraClass = '') {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${sender} ${extraClass}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      if (sender === 'bot') {
+        avatar.innerHTML = '<i class="fas fa-robot"></i>';
+      } else {
+        avatar.innerHTML = '<i class="fas fa-user"></i>';
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      // simple markdown-like parsing for bold ** **
+      let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      // detect some tags: director, producer, country etc – just highlight
+      bubble.innerHTML = formattedText;
+
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(bubble);
+      chatMessages.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    // ----- Show / remove typing indicator -----
+    function showTyping() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message bot typing-indicator';
+      typingDiv.id = 'typingIndicator';
+      typingDiv.innerHTML = `
+        <div class="avatar"><i class="fas fa-robot"></i></div>
+        <div class="dots">
+          <span></span><span></span><span></span>
+        </div>
+      `;
+      chatMessages.appendChild(typingDiv);
+      scrollToBottom();
+    }
+
+    function removeTyping() {
+      const indicator = document.getElementById('typingIndicator');
+      if (indicator) indicator.remove();
+    }
+
+    // ----- Simulate "AI" response (movie recommendation + details) -----
+    function generateBotResponse(userMessage) {
+      // 🔮 enrich with director, producer, country, etc.
+      const lower = userMessage.toLowerCase();
+      let reply = '';
+
+      // ----- pattern matching (demo) -----
+      if (lower.includes('sci-fi') || lower.includes('scifi') || lower.includes('science fiction')) {
+        reply = `🎬 <strong>Interstellar</strong> (2014) · Dir: Christopher Nolan · Prod: Emma Thomas, Christopher Nolan<br> 
+        🌍 Country: USA/UK · Genre: Sci-Fi, Drama · ⭐ 8.6/10<br>
+        <span style="display:inline-block; margin-top:6px;">🧠 A team of explorers travel through a wormhole in space. Stunning visuals and profound themes. 
+        Also check: <strong>Arrival</strong> (2016) · Dir: Denis Villeneuve · Prod: Dan Levine, Shawn Levy.</span>`;
+      } 
+      else if (lower.includes('k-drama') || lower.includes('korean drama') || lower.includes('kdrama')) {
+        reply = `🇰🇷 <strong>Crash Landing on You</strong> (2019) · Dir: Lee Jeong-hyo · Prod: Lee Ji-min, Ha Myung-hee<br>
+        🌏 Country: South Korea · Genre: Romance, Comedy, Drama · ⭐ 8.7/10<br>
+        <span style="display:inline-block; margin-top:6px;">💞 A South Korean heiress crash-lands in North Korea, where she meets a charismatic officer. 
+        Great chemistry and production. Also: <strong>Goblin</strong> · Dir: Lee Eung-bok · Prod: Kim Hyun-jung.</span>`;
+      }
+      else if (lower.includes('bollywood') || lower.includes('hindi')) {
+        reply = `🇮🇳 <strong>3 Idiots</strong> (2009) · Dir: Rajkumar Hirani · Prod: Vidhu Vinod Chopra<br>
+        🌏 Country: India · Genre: Comedy, Drama · ⭐ 8.4/10<br>
+        <span style="display:inline-block; margin-top:6px;">🎓 Two friends search for their lost college buddy. A heartwarming satire on the education system. 
+        Also: <strong>Dangal</strong> · Dir: Nitesh Tiwari · Prod: Aamir Khan, Kiran Rao.</span>`;
+      }
+      else if (lower.includes('anime') || lower.includes('fantasy') && lower.includes('anime')) {
+        reply = `🎌 <strong>Spirited Away</strong> (2001) · Dir: Hayao Miyazaki · Prod: Toshio Suzuki<br>
+        🌏 Country: Japan · Genre: Animation, Fantasy · ⭐ 8.6/10<br>
+        <span style="display:inline-block; margin-top:6px;">🌀 A young girl navigates a mysterious spirit world. Masterpiece by Studio Ghibli. 
+        Also: <strong>Your Name</strong> · Dir: Makoto Shinkai · Prod: Kōichirō Itō.</span>`;
+      }
+      else if (lower.includes('nolan') || lower.includes('christopher nolan')) {
+        reply = `🎥 <strong>Inception</strong> (2010) · Dir: Christopher Nolan · Prod: Emma Thomas, Christopher Nolan<br>
+        🌍 Country: USA/UK · Genre: Sci-Fi, Action · ⭐ 8.8/10<br>
+        <span style="display:inline-block; margin-top:6px;">🌀 A thief who steals corporate secrets through dream-sharing tech. Mind-bending. 
+        Also: <strong>The Dark Knight</strong> · Dir: Nolan · Prod: Emma Thomas, Charles Roven.</span>`;
+      }
+      else if (lower.includes('director') || lower.includes('producer') || lower.includes('country')) {
+        reply = `📽️ I can share director/producer details! For example: <br>
+        <strong>Parasite</strong> (2019) · Dir: Bong Joon-ho · Prod: Kwak Sin-ae, Bong Joon-ho<br>
+        🇰🇷 Country: South Korea · Genre: Thriller, Drama · ⭐ 8.5/10<br>
+        <span style="display:inline-block; margin-top:6px;">🏆 Won 4 Oscars, including Best Picture. A must-watch.</span>`;
+      }
+      else if (lower.includes('romance') || lower.includes('romantic')) {
+        reply = `❤️ <strong>La La Land</strong> (2016) · Dir: Damien Chazelle · Prod: Fred Berger, Jordan Horowitz, Marc Platt<br>
+        🌍 Country: USA · Genre: Musical, Romance · ⭐ 8.0/10<br>
+        <span style="display:inline-block; margin-top:6px;">🎶 A jazz pianist and an actress fall in love while chasing their dreams in LA. 
+        Also: <strong>Eternal Sunshine</strong> · Dir: Michel Gondry · Prod: Anthony Bregman, Steve Golin.</span>`;
+      }
+      else if (lower.includes('action') || lower.includes('thriller')) {
+        reply = `🔥 <strong>Mad Max: Fury Road</strong> (2015) · Dir: George Miller · Prod: George Miller, Doug Mitchell<br>
+        🌍 Country: Australia/USA · Genre: Action, Adventure · ⭐ 8.1/10<br>
+        <span style="display:inline-block; margin-top:6px;">🚗 In a post-apocalyptic wasteland, a woman rebels against a tyrannical ruler. High-octane. 
+        Also: <strong>John Wick</strong> · Dir: Chad Stahelski · Prod: Basil Iwanyk, David Leitch.</span>`;
+      }
+      else {
+        // fallback : generic but still rich
+        reply = `🎞️ I found some interesting titles for you! <br>
+        <strong>Everything Everywhere All at Once</strong> (2022) · Dir: Daniel Kwan, Daniel Scheinert · Prod: Daniels, Jonathan Wang<br>
+        🌏 Country: USA · Genre: Sci-Fi, Comedy, Drama · ⭐ 8.0/10<br>
+        <span style="display:inline-block; margin-top:6px;">🌀 An aging Chinese immigrant gets swept up in an insane adventure. Multiverse madness. 
+        Also: <strong>Past Lives</strong> (2023) · Dir: Celine Song · Prod: David Hinojosa, Christine Vachon.</span>`;
+      }
+
+      return reply;
+    }
+
+    // ----- Process user message (public) -----
+    function processUserMessage(message) {
+      if (isProcessing) return;
+      if (!message || message.trim() === '') return;
+
+      const clean = message.trim();
+      // add user message
+      addMessage(clean, 'user');
+
+      // clear input
+      userInput.value = '';
+      isProcessing = true;
+
+      // show typing
+      showTyping();
+
+      // simulate network delay (400-800ms)
+      const delay = 450 + Math.random() * 400;
+      setTimeout(() => {
+        removeTyping();
+
+        // generate bot response
+        const botReply = generateBotResponse(clean);
+        addMessage(botReply, 'bot');
+
+        isProcessing = false;
+
+        // after bot message, update quick chips with dynamic suggestions (optional)
+        updateChips(clean);
+      }, delay);
+    }
+
+    // ----- dynamic chip update based on context -----
+    function updateChips(userMessage) {
+      const lower = userMessage.toLowerCase();
+      let chips = [];
+      if (lower.includes('sci-fi') || lower.includes('scifi')) {
+        chips = ['Dune', 'Blade Runner', 'Ex Machina'];
+      } else if (lower.includes('k-drama') || lower.includes('korean')) {
+        chips = ['Reply 1988', 'Kingdom', 'Itaewon Class'];
+      } else if (lower.includes('bollywood')) {
+        chips = ['Lagaan', 'Dilwale Dulhania', 'Gangs of Wasseypur'];
+      } else if (lower.includes('anime')) {
+        chips = ['Attack on Titan', 'Demon Slayer', 'Cowboy Bebop'];
+      } else if (lower.includes('action')) {
+        chips = ['The Raid', 'Die Hard', 'Mission Impossible'];
+      } else {
+        // default: more general
+        chips = ['Sci‑Fi thriller', 'K‑Drama romance', 'Bollywood action', 'Anime fantasy', 'Nolan films'];
+      }
+
+      // rebuild chip container
+      quickChips.innerHTML = '';
+      chips.forEach(label => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.innerHTML = `<i class="fas fa-magic" style="font-size: 0.6rem;"></i> ${label}`;
+        chip.dataset.query = label;
+        quickChips.appendChild(chip);
+      });
+    }
+
+    // ----- Event listeners -----
+    function handleSend() {
+      const text = userInput.value.trim();
+      if (text) processUserMessage(text);
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+
+    userInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    // chip click → fill input & send
+    quickChips.addEventListener('click', (e) => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      const query = chip.dataset.query || chip.innerText.trim();
+      if (query) {
+        userInput.value = query;
+        handleSend();
+      }
+    });
+
+    // focus input on load
+    userInput.focus();
+
+    // add a small instruction after load (optional)
+    setTimeout(() => {
+      // ensure welcome is visible
+      scrollToBottom();
+    }, 100);
+
+    // expose for debugging
+    window.__chat = { processUserMessage };
+
+  })();
+</script>
+
+</body>
+</html>
