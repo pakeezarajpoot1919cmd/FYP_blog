@@ -2,7 +2,7 @@
      "version": 2,
 "builds":[
     {
-        "scr":"FYP_blog/app.py",
+        "src":"FYP_blog/app.py",
     "use": "@vercel/python"}
 ],
 "routes": [
