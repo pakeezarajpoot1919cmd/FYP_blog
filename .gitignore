@@ -1,5 +1,5 @@
 __pycashe__/
 *.pyc
 .env
-venv/
+.venv/
 .vscode/
